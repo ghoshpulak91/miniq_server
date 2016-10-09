@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "POST /messages [request]",
+  "description": "Add a new message to the MiniQ",
+  "type": "object",
+  "required": [
+    "msg"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "msg": {
+      "type": "string",
+      "description": "String message max 16000000 bytes",
+      "maxLength": 16000000
+    }
+  }
+}

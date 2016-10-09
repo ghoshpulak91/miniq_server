@@ -1,0 +1,2 @@
+# this script will strat the application in localhost at port 7777 
+ruby miniq_server.rb -o 0.0.0.0 -p 7777
