@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "POST /messages [response]",
+  "title": "POST /messages/queue [response]",
   "description": "Response after adding a new message to the MiniQ",
   "type": "object",
   "required": [

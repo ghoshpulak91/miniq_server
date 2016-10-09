@@ -11,13 +11,10 @@ set :miniq, MiniQ.new
 
 # below are the all routes i.e. API end-points 
 
-
-# POST /messages - Add a new message
+# POST /messages/{queue} - Add a new message into a queue
 #
-# Request POST /messages
-#   The body is a JSON object based on the JSON schema can be found in post-messages-request.json.
-#   If visible is not set, it should default to false.
-#   added should default to today's date (in UTC)
+# Request POST /messages/{queueu}
+#   The body is a JSON object based on the JSON schema can be found in post-messages-request.json .
 # Response 
 #   Valid status codes:
 #     201 Created if the message was successfully added
@@ -30,37 +27,37 @@ post '/messages/:queue' do
 	set_response(response)
 end
 
-# GET /messages - List all messages
+# GET /messages/{queue} - List all messages need to be processed from a queue
 # 
-# Request GET /messages
+# Request GET /messages/{queue}
 #   Empty body.
 # Response
 #   Valid status codes:
 #     200 OK
-#   The body is a JSON array based on the JSON schema can be found in get-messages-response.json. Only visible messages should be returned.
+#   The body is a JSON array based on the JSON schema can be found in get-messages-response.json. Only messages need to be processed should be returned.
 get '/messages/:queue' do
 	response = settings.miniq.get_messages(params)
 	set_response(response)
 end
 
-# GET /messages/{id} - Get details on a specific message
+# GET /messages/{queue}/{id} - Get details on a specific message by id
 # 
-# Request GET /messages/{id}
+# Request GET /messages/{queue}/{id}
 #   Empty body.
 # Response
 #   Valid status codes:
 #     200 OK if the message exists
 #     404 Not found if the message does not exist
-#   A 404 Not found is expected when the message does not exist. Birds with visible set to false should be returned with a 200 OK.
-#   The response body for a 200 OK request can be found in get-messages-id-response.json.
+#   A 404 Not found is expected when the message does not exist. Messages with processing set to false should be returned with a 200 OK.
+#   The response body for a 200 OK request can be found in get-messages-id-response.json(TODO).
 get '/messages/:queue/:id' do 
 	response = settings.miniq.get_message_by_id(params)
 	set_response(response)
 end
 
-# DELETE /messages/{id} - Delete a message by id
+# DELETE /messages/{queue}/{id} - Delete a message by id. This implements notify option in MiniQ
 # 
-# Request DELETE /messages/{id}
+# Request DELETE /messages/{queue}/{id}
 #   Empty body
 # Response
 #   Valid status codes:
