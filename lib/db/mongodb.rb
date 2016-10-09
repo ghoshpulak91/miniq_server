@@ -14,17 +14,17 @@ end
 # This is MongoDB wrapper class, contains various methods
 class DB::MongoDB
 
-	def initialize(database_name, args_hash = {})
-		connect_to_database(database_name, args_hash)
+	def initialize(database_url, args_hash = {})
+		connect_to_database(database_url, args_hash)
 	end
 
 	# This connects mongodb databases. TODO we should take MongoDB host and port from config.
 	# @param [String] database_name database name to connect
 	# @param [Hash] args_hash one optional hash 
 	# @retrun [Mongo::Client] mongo cleint per database
-	def connect_to_database(database_name, args_hash={})
-		$log.info "going to connect to MongoDB at 127.0.0.1:27017"
-		@client = Mongo::Client.new([ '127.0.0.1:27017' ], :database => database_name)
+	def connect_to_database(database_url, args_hash={})
+		$log.info "going to connect #{database_url}"
+		@client = Mongo::Client.new(database_url)
 	end
 
 	# It inserts one documents into a collection. 

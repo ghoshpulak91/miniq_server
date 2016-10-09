@@ -23,7 +23,7 @@ set :miniq, MiniQ.new
 #     201 Created if the message was successfully added
 #     400 Bad request if any mandatory fields were missing or if the input JSON was invalid
 #   The body is a JSON object based on the JSON schema can be found in post-messages-response.json.
-post '/messages' do
+post '/messages/:queue' do
 	request.body.rewind  # in case someone already read it
 	body = request.body.read
 	response = settings.miniq.post_messages(params, body)
@@ -38,7 +38,7 @@ end
 #   Valid status codes:
 #     200 OK
 #   The body is a JSON array based on the JSON schema can be found in get-messages-response.json. Only visible messages should be returned.
-get '/messages' do
+get '/messages/:queue' do
 	response = settings.miniq.get_messages(params)
 	set_response(response)
 end
@@ -53,7 +53,7 @@ end
 #     404 Not found if the message does not exist
 #   A 404 Not found is expected when the message does not exist. Birds with visible set to false should be returned with a 200 OK.
 #   The response body for a 200 OK request can be found in get-messages-id-response.json.
-get '/messages/:id' do 
+get '/messages/:queue/:id' do 
 	response = settings.miniq.get_message_by_id(params)
 	set_response(response)
 end
@@ -67,7 +67,7 @@ end
 #     200 OK if the message has been removed
 #     404 Not found if the message didn't exist
 #   Empty body expected.
-delete '/messages/:id' do 
+delete '/messages/:queue/:id' do 
 	response = settings.miniq.delete_message_by_id(params)
 	set_response(response)
 end

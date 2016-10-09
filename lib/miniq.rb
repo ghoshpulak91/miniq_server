@@ -2,6 +2,7 @@ require 'json'
 require 'multi_json'
 require 'monitor'
 require 'json-schema'
+require 'yaml'
 
 load_arr = ["./logger.rb", "./db/mongodb.rb"]
 load_arr.each do |lib|
@@ -14,11 +15,20 @@ class MiniQ
 	include MonitorMixin
 
 	def initialize(args_hash = {})
-		@db_name = "MiniQDB"
-		@collection_name = "messages"
-		@processing_timeout = 10 # secs
-		@mongodb_obj = DB::MongoDB.new(@db_name)
+		load_config
 		load_all_json_schemas
+		@mongodb_obj = DB::MongoDB.new(@mongodb_url)
+	end
+
+	def load_config
+		config_file_path = get_config_file_path
+		config_hash = YAML::load_file(config_file_path)
+		@mongodb_url = config_hash["mongodb"]["url"]
+		@processing_timeout = config_hash["processing_timeout"] # secs
+	end
+
+	def get_config_file_path
+		File.expand_path(File.dirname(__FILE__)+"/"+"../configs/miniq_server.yml")
 	end
 
 	# It lodas all json-schema files, pasre into Hash and save in a instance variable @all_json_schemas
@@ -82,6 +92,13 @@ class MiniQ
 		return message_info_hash	
 	end
 
+	def get_collection_name(args_hash={})
+		queue_name = args_hash["queue"].chomp.strip
+		raise Exception.new("queue name is not passed") if not queue_name or queue_name.empty?
+		collection_name = "messages_#{queue_name}"
+		return collection_name
+	end
+
 	# This method implemets 'POST /messages' endpoint
 	# @param [Hash] params request parameter hash
 	# @param [String] body json input string
@@ -93,11 +110,13 @@ class MiniQ
 		message_info_hash = parse_and_validate_message_info_json(message_info_json)	
 		return get_response_hash(400) if not message_info_hash
 		begin
-			document_id = @mongodb_obj.insert_one_document_into_a_collection(@collection_name, message_info_hash)
+			collection_name = get_collection_name(params)
+			document_id = @mongodb_obj.insert_one_document_into_a_collection(collection_name, message_info_hash)
 			raise Exception.new("could not save message_info_hash") if not (document_id and document_id.is_a?(BSON::ObjectId))
-			message_info_hash["id"] = document_id.to_s
-			JSON::Validator.validate!(@all_json_schemas['post-messages-response.json'], message_info_hash)
-			return get_response_hash(201, message_info_hash) 
+			return_hash = {}
+			return_hash["id"] = document_id.to_s
+			JSON::Validator.validate!(@all_json_schemas['post-messages-response.json'], return_hash)
+			return get_response_hash(201, return_hash) 
 		rescue Exception => e
 			$log.error "#{e.class} -> #{e.message} for params #{params} and body: #{body}"
 			$log.info e.backtrace
@@ -111,13 +130,14 @@ class MiniQ
 	def get_messages(params = {})
 		message_info_hash_array = []
 		begin
-			refresh_messages
+			collection_name = get_collection_name(params)
+			refresh_messages(collection_name)
 			filter = { "processing" => false }
 			processing_started_at = Time.now.utc.to_i
 			query  = { :processing => true, :processing_started_at => processing_started_at }
 			update_query  = { '$set' => query }
-			@mongodb_obj.find_and_update_documents_in_a_collection(@collection_name, filter, update_query)
-			@mongodb_obj.get_documents_from_a_collection(@collection_name, query).each do |message_document|
+			@mongodb_obj.find_and_update_documents_in_a_collection(collection_name, filter, update_query)
+			@mongodb_obj.get_documents_from_a_collection(collection_name, query).each do |message_document|
 				message_info_hash = {}
 				message_document.each do |key, val|
 					if key == "_id"
@@ -137,10 +157,10 @@ class MiniQ
 		end
 	end
 
-	def refresh_messages()
+	def refresh_messages(collection_name)
 		filter = { :processing => true, :processing_started_at => {'$lte' => (Time.now.utc.to_i - @processing_timeout )}  }
 		query  =  { '$set' =>  { :processing => false, :processing_started_at => nil } }
-		@mongodb_obj.find_and_update_documents_in_a_collection(@collection_name, filter, query)
+		@mongodb_obj.find_and_update_documents_in_a_collection(collection_name, filter, query)
 	end
 	
 	# This method implemets 'GET /messages/{id}' endpoint
@@ -149,11 +169,12 @@ class MiniQ
 	def get_message_by_id(params = {})
 		message_info_hash = {}
 		begin
+			collection_name = get_collection_name(params)
 			id = params["id"]
 			query_hash = {
 				:_id => BSON::ObjectId(id)
 			}
-			message_document = @mongodb_obj.get_documents_from_a_collection(@collection_name, query_hash, :limit => 1).first
+			message_document = @mongodb_obj.get_documents_from_a_collection(collection_name, query_hash, :limit => 1).first
 			return get_response_hash(404) if not message_document
 			message_document.each do |key, val|
 				if key == "_id"
@@ -179,11 +200,12 @@ class MiniQ
 	def delete_message_by_id(params = {})
 		message_info_hash = {}
 		begin
+			collection_name = get_collection_name(params)
 			id = params["id"]
 			query_hash = {
 				:_id => BSON::ObjectId(id)
 			}
-			message_document = @mongodb_obj.delete_a_documents_from_a_collection(@collection_name, query_hash)
+			message_document = @mongodb_obj.delete_a_documents_from_a_collection(collection_name, query_hash)
 			return get_response_hash(404) if not message_document.is_a?(BSON::Document)
 			return get_response_hash(200)
 		rescue BSON::ObjectId::Invalid => e

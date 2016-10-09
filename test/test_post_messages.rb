@@ -15,8 +15,8 @@ class TestPostMessages < Minitest::Test
 		@httpclint = HTTPClient.new
         end
 
-        def test_post_messages_valid_json_data_only_required_fields
-		base_url = "http://localhost:7777/messages"
+        def test_post_messages
+		base_url = "http://localhost:7777/messages/test"
 		header = {"Content-Type" => "application/json"}
 		json_data = '{"msg": "Stayzilla"}'
 		message_info_hash_from_json_data = MultiJson.load(json_data)
@@ -31,14 +31,6 @@ class TestPostMessages < Minitest::Test
 		# check message id 
 		id = message_info_hash["id"]
 		assert_equal(true, (id and not id.empty?))
-		
-		# check msg  
-		msg = message_info_hash["msg"]
-		assert_equal(true, (msg and not msg.empty?))
-		
-		# check processing
-		processing = message_info_hash["processing"]
-		assert_equal(false, processing)
 	end
 
 end

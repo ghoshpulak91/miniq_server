@@ -4,29 +4,13 @@
   "description": "Response after adding a new message to the MiniQ",
   "type": "object",
   "required": [
-    "id",
-    "msg",
-    "published_at",
-    "processing"
+    "id"
   ],
   "additionalProperties": false,
   "properties": {
     "id": {
       "type": "string",
       "description": "Object id from the database"
-    },
-    "msg": {
-      "type": "string",
-      "description": "String message max 16000000 bytes",
-      "maxLength": 16000000
-    },
-    "published_at": {
-      "type": "integer",
-      "description": "Message publish timestamp"
-    },
-    "processing": {
-      "type": "boolean",
-      "description": "Message processing started or not"
     }
   }
 }
