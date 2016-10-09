@@ -138,3 +138,122 @@ Valid status codes:
  - `404 Not found` if the message didn't exist
 
 Empty body expected.
+
+Setup and build details
+=======================
+
+------
+
+## Language 
+
+Ruby version - 2.3.1
+
+------
+
+## Web framework 
+
+Sinatra version - 1.4.7 
+
+------
+
+## Database 
+
+Mongodb version - 3.2.9 
+
+------
+
+## Getting started
+
+1) Clone or download this repository
+
+~~~
+$ git clone https://github.com/ghoshpulak91/miniq_server.git
+$ cd miniq_server
+~~~
+
+2) Install prerequisites and setting up environment.
+
+2.1) Install mongodb(Ref: https://docs.mongodb.com/manual/installation/).
+
+2.2) Install RVM and Ruby-2.3.1(Ref: http://tecadmin.net/install-ruby-on-rails-on-ubuntu/)
+
+2.3) Set ruby-2.3.1 as default ruby version. 
+
+~~~
+$ rvm use 2.3.1 --default
+$ ruby --version
+~~~
+
+
+2.4) Install required gems 
+
+~~~ 
+$ gem install bundler sinatra thin mongo yaml json multi_json logger monitor json-schema httpclient minitest 
+~~~
+
+------
+
+## Run the application 
+
+To start 
+
+~~~
+$ ./start 
+~~~
+
+The application can be started in localhost at port number 7777. To test click [here](http://localhost:7777) or run below command.
+
+~~~
+$ curl http://localhost:7777
+~~~
+
+To stop 
+
+~~~
+$ ./stop 
+~~~
+
+------
+
+## Check logs 
+
+Log file path  
+
+~~~
+$ ./log/run.log 
+~~~
+
+If you are using Linux then you can use bellow command to check log  
+
+~~~
+$ tail -f ./log/run.log
+~~~
+
+------
+
+## Run test suite 
+
+To run the test suite 
+
+~~~
+$ ruby ./test/test_post_messages.rb
+$ ruby ./test/test_get_messages.rb
+$ ruby ./test/test_delete_messages_by_id.rb
+~~~ 
+
+Scaling this service 
+====================
+
+### How to scale this service to meet high volume requests? What infrastructure/stack would we use and why?
+
+To scale this service, we will have to scale two main component mongodb and REST API.
+
+Vertical scaling
+----------------
+
+We can add more power(CPU, RAM) to those machines where mongodb and API is hosted. 
+
+Horizontal scaling
+------------------
+
+Here we can use mongodb cluster. And for API we can use pool of machines under HAProxy and AWS auto-scalling.
