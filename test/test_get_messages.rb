@@ -16,7 +16,7 @@ class TestGetMessages < Minitest::Test
         end
 
         def test_get_messages
-		url = "http://localhost:7777/messages"
+		url = "http://localhost:7777/messages/test"
 		response = @httpclint.get(url)
 		status_code = response.status
 		body = response.body

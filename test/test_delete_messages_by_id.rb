@@ -16,7 +16,7 @@ class TestDeleteMessagesByID < Minitest::Test
         end
 
         def test_delete_messages_by_id
-		base_url = "http://localhost:7777/messages"
+		base_url = "http://localhost:7777/messages/test"
 		header = {"Content-Type" => "application/json"}
 		json_data = '{"msg": "Stayzilla"}'
 		response = @httpclint.post(base_url, json_data, header)
@@ -51,7 +51,7 @@ class TestDeleteMessagesByID < Minitest::Test
 	end
         
         def test_delete_messages_by_id_invalid_id
-		url = "http://localhost:7777/messages/100001"
+		url = "http://localhost:7777/messages/test/1000001"
 		response = @httpclint.delete(url)
 		status_code = response.status
 		# check status code
