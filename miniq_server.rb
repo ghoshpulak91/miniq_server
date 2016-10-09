@@ -40,7 +40,7 @@ get '/messages/:queue' do
 	set_response(response)
 end
 
-# GET /messages/{queue}/{id} - Get details on a specific message by id
+# GET /messages/{queue}/{id} - Get details of a specific message by id
 # 
 # Request GET /messages/{queue}/{id}
 #   Empty body.
