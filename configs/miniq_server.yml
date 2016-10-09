@@ -1,4 +1,9 @@
 ---
+# This mongodb database will be used as storage
 mongodb:
   url: "mongodb://127.0.0.1:27017/MiniQDB"
-processing_timeout: 10 # secs
+# If a message is received by a consumer, 
+# but NOT marked as processed within a configurable amount of time, 
+# the message then becomes available to any consumer requesting again.
+# This is timeout in sec
+processing_timeout: 10 # sec

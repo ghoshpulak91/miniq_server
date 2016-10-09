@@ -9,17 +9,20 @@ load_arr.each do |lib|
 	require File.expand_path(File.dirname(__FILE__)+"/"+lib)
 end
 
-# This class implemets all methods, which validates input and save input to the databases 
+# This class implemets all methods of MiniQ, which validates input and save input to the databases 
 class MiniQ
 	# a monitor is an object or module intended to be used safely by more than one thread.
 	include MonitorMixin
 
+	# @param [Hash] args_hash
+	# @return [MiniQ]
 	def initialize(args_hash = {})
 		load_config
 		load_all_json_schemas
 		@mongodb_obj = DB::MongoDB.new(@mongodb_url)
 	end
 
+	# This loads all config needed
 	def load_config
 		config_file_path = get_config_file_path
 		config_hash = YAML::load_file(config_file_path)
@@ -99,7 +102,7 @@ class MiniQ
 		return collection_name
 	end
 
-	# This method implemets 'POST /messages' endpoint
+	# This method implemets 'POST /messages/{queue}' endpoint
 	# @param [Hash] params request parameter hash
 	# @param [String] body json input string
 	# @return [Hash] return a response_hash. Keys are status, content_type and body.
@@ -124,7 +127,7 @@ class MiniQ
 		end
 	end
 
-	# This method implemets 'GET /messages' endpoint
+	# This method implemets 'GET /messages/{queue}' endpoint
 	# @param [Hash] params request parameter hash
 	# @return [Hash] return a response_hash. Keys are status, content_type and body.
 	def get_messages(params = {})
@@ -157,13 +160,18 @@ class MiniQ
 		end
 	end
 
+	# If a message is received by a consumer, 
+	# but NOT marked as processed within a configurable amount of time, 
+	# the message then becomes available to any consumer requesting again.
+	# This method does that 
+	# @param [String] collection_name
 	def refresh_messages(collection_name)
-		filter = { :processing => true, :processing_started_at => {'$lte' => (Time.now.utc.to_i - @processing_timeout )}  }
+		filter = { :processing => true, :processing_started_at => {'$lte' => (Time.now.utc.to_i - @processing_timeout )} }
 		query  =  { '$set' =>  { :processing => false, :processing_started_at => nil } }
 		@mongodb_obj.find_and_update_documents_in_a_collection(collection_name, filter, query)
 	end
 	
-	# This method implemets 'GET /messages/{id}' endpoint
+	# This method implemets 'GET /messages/{queue}/{id}' endpoint
 	# @param [Hash] params request parameter hash. Key is 'id'
 	# @return [Hash] return a response_hash. Keys are status, content_type and body.
 	def get_message_by_id(params = {})
@@ -194,7 +202,7 @@ class MiniQ
 		end
 	end
 	
-	# This method implemets 'DELETE /messages/{id}' endpoint
+	# This method implemets 'DELETE /messages/{queue}/{id}' endpoint
 	# @param [Hash] params request parameter hash. Key is 'id'
 	# @return [Hash] return a response_hash. Keys are status, content_type and body.
 	def delete_message_by_id(params = {})

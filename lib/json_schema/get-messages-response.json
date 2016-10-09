@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "GET /messages [response]",
+  "title": "GET /messages/queue [response]",
   "description": "List all messages to be processed",
   "type": "array",
   "additionalProperties": false,

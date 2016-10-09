@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-04/schema#",
-  "title": "POST /messages [request]",
+  "title": "POST /messages/queue [request]",
   "description": "Add a new message to the MiniQ",
   "type": "object",
   "required": [
